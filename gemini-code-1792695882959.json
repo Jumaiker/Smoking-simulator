@@ -1,0 +1,22 @@
+{
+  "name": "Smoking Simulator - PRO",
+  "short_name": "Smoking Sim",
+  "description": "Un juego arcade retro de gestión de ansiedad y tiempo.",
+  "start_url": "./index.html",
+  "display": "fullscreen",
+  "background_color": "#0d021a",
+  "theme_color": "#d800ff",
+  "orientation": "landscape",
+  "icons": [
+    {
+      "src": "icono_smoking_simulator.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icono_smoking_simulator.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
