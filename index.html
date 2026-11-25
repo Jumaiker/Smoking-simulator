@@ -405,11 +405,6 @@ body.no-crt #crt { display: none; }
   position: absolute; left: -.42em; top: -.55em; width: 1.15em; height: auto; transform: rotate(-16deg);
   filter: drop-shadow(0 0 6px rgba(255, 255, 255, .35)); pointer-events: none; z-index: 3;
 }
-.xmas-greet {
-  display: block; width: clamp(240px, 32vw, 320px); height: auto; aspect-ratio: 160 / 34; margin: -4px 0 -2px;
-  filter: drop-shadow(0 0 10px rgba(255, 60, 90, .35)) drop-shadow(0 3px 0 rgba(0, 0, 0, .35));
-}
-body.xmas .cabinet { padding-top: max(26px, clamp(14px, 2.6vh, 24px)); }
 .xmas-lights {
   position: absolute; top: 4px; left: 22px; right: 22px; height: 16px; z-index: 2; pointer-events: none;
   display: flex; justify-content: space-between; align-items: flex-start;
@@ -426,9 +421,6 @@ body.xmas .cabinet { padding-top: max(26px, clamp(14px, 2.6vh, 24px)); }
 .xmas-lights i:nth-child(5n+4) { --b: #76ff03; animation-delay: -.3s; }
 .xmas-lights i:nth-child(5n+5) { --b: #ff4fd8; animation-delay: -.9s; }
 @keyframes xmasBulb { 66% { opacity: .3; box-shadow: none; } }
-@media (max-height: 540px) and (orientation: landscape) {
-  .menu-panel .xmas-greet { width: 165px; margin: -8px 0 -6px; }
-}
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
@@ -445,7 +437,6 @@ body.xmas .cabinet { padding-top: max(26px, clamp(14px, 2.6vh, 24px)); }
     <header class="title-wrap">
       <h1 class="game-title"><span class="t-line"><svg class="xmas-hat" viewBox="0 0 18 14" aria-hidden="true" shape-rendering="crispEdges" hidden><path fill="#e11d48" d="M1 8h14v3H1zM2 6h12v2H2zM4 4h10v2H4zM7 3h8v1H7zM10 2h5v1h-5z"/><path fill="#9f1239" d="M1 8h3v3H1zM2 6h2v2H2zM4 4h2v2H4z"/><path fill="#fb7185" d="M10 5h2v1h-2zM11 7h2v1h-2z"/><path fill="#f8fafc" d="M0 11h16v3H0zM14 0h4v3h-4z"/><path fill="#cbd5e1" d="M0 13h16v1H0zM17 1h1v2h-1z"/></svg>SMOKING</span><br>SIMULATOR</h1>
       <canvas id="title-cig" width="80" height="24" aria-hidden="true"></canvas>
-      <canvas class="xmas-greet" id="xmas-greet" width="160" height="34" role="img" data-i18n-label="xmas" hidden></canvas>
     </header>
 
     <div class="lang-bar" role="group" aria-label="Idioma / Language">
@@ -638,7 +629,7 @@ Store.load();
    En las instrucciones: *texto* = resaltado amarillo, _texto_ = verde */
 const DICT = {
   es: {
-    chooseChar: 'ELIGE PERSONAJE', chooseDiff: 'DIFICULTAD', xmas: 'FELIZ NAVIDAD',
+    chooseChar: 'ELIGE PERSONAJE', chooseDiff: 'DIFICULTAD',
     easy: 'FÁCIL', mod: 'MODERADO', ext: 'ADICTO EXTREMO',
     continue: 'CONTINUAR', instTitle: 'INSTRUCCIONES', accept: 'ACEPTAR', back: 'VOLVER',
     tryAgain: 'INTENTARLO DE NUEVO', menu: 'MENÚ', resume: 'SEGUIR', restart: 'REINICIAR', paused: 'PAUSA',
@@ -689,7 +680,7 @@ const DICT = {
     ]
   },
   en: {
-    chooseChar: 'CHOOSE CHARACTER', chooseDiff: 'DIFFICULTY', xmas: 'MERRY CHRISTMAS',
+    chooseChar: 'CHOOSE CHARACTER', chooseDiff: 'DIFFICULTY',
     easy: 'EASY', mod: 'MODERATE', ext: 'EXTREME ADDICT',
     continue: 'CONTINUE', instTitle: 'INSTRUCTIONS', accept: 'ACCEPT', back: 'BACK',
     tryAgain: 'TRY AGAIN', menu: 'MENU', resume: 'RESUME', restart: 'RESTART', paused: 'PAUSED',
@@ -3428,7 +3419,7 @@ const UI = {
   init() {
     if (XMAS) {
       document.body.classList.add('xmas');
-      document.querySelectorAll('.xmas-hat, .xmas-greet').forEach(el => el.removeAttribute('hidden'));
+      document.querySelectorAll('.xmas-hat').forEach(el => el.removeAttribute('hidden'));
       document.querySelectorAll('.cabinet').forEach(p => {
         const l = document.createElement('div'); l.className = 'xmas-lights'; l.setAttribute('aria-hidden', 'true');
         for (let i = 0; i < 16; i++) l.appendChild(document.createElement('i'));
@@ -3770,6 +3761,7 @@ const UI = {
     g.imageSmoothingEnabled = false; g.clearRect(0, 0, 80, 24);
     R(g, 5, 13, 16, 6, '#ff9800'); for (let x = 7; x < 21; x += 4) P(g, x, 15, '#e65100'); R(g, 5, 13, 16, 1, '#ffb74d');
     R(g, 21, 13, 40, 6, '#f8fafc'); R(g, 21, 18, 40, 1, '#cbd5e1'); R(g, 21, 13, 40, 1, '#ffffff');
+    if (XMAS) this.xmasCig(g, t);
     R(g, 61, 13, 3, 6, '#9ca3af'); R(g, 64, 13, 4, 6, Math.floor(t * 6) % 2 ? '#ff3d00' : '#ff6d00'); P(g, 66, 14, '#ffea00'); P(g, 67, 16, '#ffea00');
     g.globalCompositeOperation = 'lighter'; glow(g, 66, 16, 6, '#ff3d00', 0.35); g.globalCompositeOperation = 'source-over';
     this.cigT -= dt;
@@ -3784,79 +3776,28 @@ const UI = {
     g.globalAlpha = 1;
     addOutline($('title-cig'), '#2b0050');
   },
-  /* ---------- cartel navideño del menú (pixel art) ---------- */
-  hollySprite() {
-    return sprite('holly', 19, 12, g => {
-      const leaf = (x0, y0, dir) => {
-        const hw = [0, 1, 1, 2, 2, 2, 1, 1, 0];
-        hw.forEach((h, k) => {
-          const x = x0 + dir * k, y = y0 - Math.round(k * 0.45);
-          R(g, x, y - h, 1, h * 2 + 1, '#15803d');
-          if (h) P(g, x, y - h, '#22c55e');
-          if (k === 3 || k === 6) { P(g, x, y - h - 1, '#15803d'); P(g, x, y + h + 1, '#166534'); }
-          if (k > 0 && k < 8) P(g, x, y, '#86efac');
-        });
-      };
-      leaf(8, 8, -1); leaf(10, 8, 1);
-      const berry = (x, y) => { disc(g, x, y, 1, '#dc2626'); P(g, x + 1, y + 1, '#991b1b'); P(g, x - 1, y - 1, '#fecaca'); };
-      berry(8, 8); berry(11, 8); berry(9, 6);
-    }, '#1a0510');
-  },
-  drawGreet(t) {
-    const cv = $('xmas-greet'); if (!cv || cv.hidden) return;
+  /* cigarro navideño: rayas de bastón de caramelo, lazo, nieve y destellos */
+  xmasCig(g, t) {
     if (REDUCED) t = 0;
-    const g = cv.getContext('2d'), W = cv.width, H = cv.height, cx = W >> 1, txt = tr('xmas');
-    cv.setAttribute('aria-label', txt);
-    g.imageSmoothingEnabled = false; g.clearRect(0, 0, W, H);
-    const tw = textW(txt), bw = tw + 26, bx = cx - (bw >> 1), by = 8, bh = 17;
-    // puntas traseras, caídas hacia abajo y con corte en V
-    const tail = (x0, dir) => {
-      for (let y = 0; y < 13; y++) {
-        const notch = Math.max(0, 4 - Math.abs(y - 6)), len = 13 - notch;
-        const xs = dir < 0 ? x0 - len : x0;
-        R(g, xs, by + 7 + y, len, 1, y === 0 ? '#be123c' : y > 10 ? '#5f1313' : '#9f1239');
-      }
-      R(g, dir < 0 ? x0 - 3 : x0, by + 7, 3, 13, '#4c0519');
-      R(g, dir < 0 ? x0 - 12 : x0 + 2, by + 9, 10, 1, '#d97706');
-      R(g, dir < 0 ? x0 - 12 : x0 + 2, by + 17, 10, 1, '#b45309');
-    };
-    tail(bx + 3, -1); tail(bx + bw - 3, 1);
-    // cuerpo de la cinta (terciopelo) con ribetes dorados
-    for (let y = 0; y < bh; y++) R(g, bx, by + y, bw, 1, mix('#f43f5e', '#7f1d1d', y / (bh - 1)));
-    R(g, bx, by + 1, bw, 1, '#fde68a'); R(g, bx, by + 2, bw, 1, '#d97706');
-    R(g, bx, by + bh - 3, bw, 1, '#fbbf24'); R(g, bx, by + bh - 2, bw, 1, '#92400e');
-    R(g, bx, by, 1, bh, '#5f1313'); R(g, bx + bw - 1, by, 1, bh, '#5f1313'); R(g, bx, by + bh, bw, 1, '#3b0710');
-    // nieve sobre la cinta, con gotas colgando
-    for (let x = bx - 1; x <= bx + bw; x++) {
-      const hh = Math.max(1, Math.round(1.6 + Math.sin(x * 0.3) * 0.9 + Math.sin(x * 0.11 + 2) * 0.8));
-      R(g, x, by - hh + 1, 1, hh, '#f8fafc'); P(g, x, by + 1, (x & 3) ? '#e2e8f0' : '#cbd5e1');
-      if (hh > 1) P(g, x, by - hh + 2, '#ffffff');
-      if (x % 13 === 5) { P(g, x, by + 2, '#e2e8f0'); P(g, x, by + 3, '#cbd5e1'); }
-    }
-    // texto dorado con contorno y sombra; la fila de arriba nevada
-    const tx = cx - (tw >> 1), ty = by + 5;
-    g.fillStyle = '#2a0508';
-    for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1], [-1, -1], [1, -1], [-1, 1], [1, 1], [2, 2], [1, 2], [2, 1], [0, 2]]) drawStr(g, txt, tx + dx, ty + dy, 1);
-    const gold = ['#ffffff', '#fff7c2', '#fde68a', '#fcd34d', '#fbbf24', '#f59e0b', '#d97706'];
-    gold.forEach((c, r) => { g.save(); g.beginPath(); g.rect(0, ty + r, W, 1); g.clip(); g.fillStyle = c; drawStr(g, txt, tx, ty, 1); g.restore(); });
-    // brillo que recorre las letras
-    const sw = ((t * 30) % (tw + 70)) - 25;
-    g.save(); g.beginPath();
-    for (let r = 0; r < 7; r++) g.rect(tx + sw - r, ty + r, 3, 1);
-    g.clip(); g.fillStyle = '#ffffff'; drawStr(g, txt, tx, ty, 1); g.restore();
-    // acebo en los extremos (la baya de arriba hace un guiño de luz)
-    const h = this.hollySprite();
-    g.drawImage(h, bx - 9, by - 3);
-    g.save(); g.translate(bx + bw + 9, 0); g.scale(-1, 1); g.drawImage(h, 0, by - 3); g.restore();
-    if (Math.floor(t * 1.5) % 2 === 0) { P(g, bx - 9 + 8, by + 2, '#ffffff'); P(g, bx + bw + 9 - 9, by + 2, '#ffffff'); }
-    // destellos alrededor
-    const spots = [[bx - 12, 5], [bx + bw * 0.28, 2], [cx + 8, 1], [bx + bw * 0.8, 3], [bx + bw + 12, 6], [bx + 14, 30], [bx + bw - 16, 30], [cx - 4, 31]];
-    spots.forEach(([x, y], k) => {
-      const ph = (Math.sin(t * 2.2 + k * 1.9) + 1) / 2, col = k % 2 ? '#fde68a' : '#ffffff';
-      x = Math.round(x); if (ph < 0.35) return;
+    // rayas rojas en diagonal sobre el papel
+    const stripe = ['#fb7185', '#e11d48', '#e11d48', '#e11d48', '#be123c', '#9f1239'];
+    for (let r = 0; r < 6; r++) for (let x = 23; x < 61; x++) if (((x + r) % 7) < 3) P(g, x, 13 + r, stripe[r]);
+    // nieve encima del cigarro
+    [[27, 4], [38, 5], [50, 3], [7, 4], [56, 2]].forEach(([x, w]) => { R(g, x, 12, w, 1, '#f8fafc'); R(g, x + 1, 11, w - 2, 1, '#ffffff'); P(g, x + 1, 13, '#e2e8f0'); });
+    // lazo de regalo verde con borde dorado en la unión con el filtro
+    const BOW = ['..ggg.....ggg..', '.gLLgg...ggLLg.', 'gL..dgg.ggd..Lg', 'gL...dgkgd...Lg', '.gL..dkkkd..Lg.', '..gggggkggggg..'];
+    const BC = { g: '#16a34a', L: '#4ade80', d: '#14532d', k: '#22c55e' };
+    BOW.forEach((row, y) => { for (let x = 0; x < row.length; x++) if (BC[row[x]]) P(g, 14 + x, 7 + y, BC[row[x]]); });
+    R(g, 20, 13, 3, 6, '#16a34a'); R(g, 20, 13, 1, 6, '#fbbf24'); R(g, 22, 13, 1, 6, '#b45309'); P(g, 21, 13, '#4ade80');
+    [[19, 19], [18, 20], [17, 21]].forEach(([x, y]) => R(g, x, y, 2, 1, '#16a34a'));
+    [[22, 19], [23, 20], [24, 21]].forEach(([x, y]) => R(g, x, y, 2, 1, '#16a34a'));
+    P(g, 17, 22, '#14532d'); P(g, 25, 22, '#14532d');
+    // destellos
+    [[4, 6], [35, 4], [46, 21], [76, 19]].forEach(([x, y], k) => {
+      const ph = (Math.sin(t * 2.4 + k * 2.1) + 1) / 2, col = k % 2 ? '#fde68a' : '#ffffff';
+      if (ph < 0.4) return;
       P(g, x, y, col);
-      if (ph > 0.6) { P(g, x - 1, y, col); P(g, x + 1, y, col); P(g, x, y - 1, col); P(g, x, y + 1, col); }
-      if (ph > 0.88) { P(g, x - 2, y, '#fbbf24'); P(g, x + 2, y, '#fbbf24'); P(g, x, y - 2, '#fbbf24'); P(g, x, y + 2, '#fbbf24'); }
+      if (ph > 0.75) { P(g, x - 1, y, col); P(g, x + 1, y, col); P(g, x, y - 1, col); P(g, x, y + 1, col); }
     });
   },
   menuTick(dt) {
@@ -3864,7 +3805,6 @@ const UI = {
     this.bgT -= dt;
     if (this.bgT <= 0) { this.bgT = 1 / 30; this.drawBg(t); }
     if (this.screen === 'menu') this.drawCig(t, dt);
-    if (XMAS && this.screen === 'menu') { this.greetT = (this.greetT || 0) - dt; if (this.greetT <= 0) { this.greetT = 1 / 15; this.drawGreet(t); } }
     this.portT -= dt;
     if (this.portT <= 0) {
       this.portT = 1 / 12;
