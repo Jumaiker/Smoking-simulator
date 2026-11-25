@@ -3820,7 +3820,20 @@ const UI = {
   }
   requestAnimationFrame(frame);
   if ('serviceWorker' in navigator && /^https?:/.test(location.protocol)) {
-    window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(() => {}); });
+    // si llega una versión nueva del juego, se recarga una vez para mostrarla
+    const hadSW = !!navigator.serviceWorker.controller;
+    let reloaded = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!hadSW || reloaded || UI.screen === 'game') return;
+      reloaded = true; location.reload();
+    });
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }).then(r => r.update()).catch(() => {});
+    });
+    // al volver a la app (p. ej. abierta desde la pantalla de inicio), comprobar si hay versión nueva
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') navigator.serviceWorker.getRegistration().then(r => r && r.update()).catch(() => {});
+    });
   }
 })();
 
