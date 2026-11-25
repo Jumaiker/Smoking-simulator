@@ -4,7 +4,7 @@
    que subas) y, si no hay conexión, se usa la copia guardada.
    Si cambias iconos u otros archivos y quieres forzar la actualización,
    sube el número de VERSION. */
-const VERSION = 'smoking-sim-v2';
+const VERSION = 'smoking-sim-v3';
 const CORE = [
   './',
   './index.html',
@@ -61,7 +61,8 @@ self.addEventListener('fetch', event => {
     event.respondWith((async () => {
       const cache = await caches.open(VERSION);
       try {
-        const res = await Promise.race([fetch(req), timeout(4000)]);
+        // cache: 'no-cache' = preguntar siempre al servidor, sin usar la caché del navegador
+        const res = await Promise.race([fetch(req.url, { cache: 'no-cache', credentials: 'same-origin' }), timeout(4000)]);
         if (res && res.ok) cache.put('./index.html', res.clone());
         return res;
       } catch (e) {
