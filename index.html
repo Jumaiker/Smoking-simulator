@@ -399,6 +399,38 @@ body.no-crt #crt { display: none; }
   .modal-buttons { gap: 9px; }
   .modal-buttons .btn, .modal-buttons .btn-primary { min-height: 44px; }
 }
+/* ---------- Navidad ---------- */
+.game-title .t-line { position: relative; }
+.xmas-hat {
+  position: absolute; left: -.42em; top: -.55em; width: 1.15em; height: auto; transform: rotate(-16deg);
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, .35)); pointer-events: none; z-index: 3;
+}
+.xmas-greet {
+  margin: 0; font-family: var(--pixel); font-size: clamp(9px, 1.5vw, 13px); letter-spacing: .1em; color: #ff1744;
+  text-shadow: 0 0 8px rgba(255, 23, 68, .7); animation: xmasGreet 1.6s steps(1) infinite;
+}
+@keyframes xmasGreet { 50% { color: #76ff03; text-shadow: 0 0 8px rgba(118, 255, 3, .7); } }
+body.xmas .cabinet { padding-top: max(26px, clamp(14px, 2.6vh, 24px)); }
+.xmas-lights {
+  position: absolute; top: 4px; left: 22px; right: 22px; height: 16px; z-index: 2; pointer-events: none;
+  display: flex; justify-content: space-between; align-items: flex-start;
+  border-top: 2px solid #166534; filter: drop-shadow(0 1px 0 #052e16);
+}
+.xmas-lights i {
+  --b: #ff1744; position: relative; display: block; width: 6px; height: 9px; margin-top: 1px;
+  border-radius: 45% 45% 50% 50% / 35% 35% 65% 65%; background: var(--b);
+  box-shadow: 0 0 7px 1px var(--b); animation: xmasBulb 1.8s steps(1) infinite;
+}
+.xmas-lights i::before { content: ""; position: absolute; left: 1px; top: -2px; width: 4px; height: 3px; background: #334155; }
+.xmas-lights i:nth-child(5n+2) { --b: #ffea00; animation-delay: -.6s; }
+.xmas-lights i:nth-child(5n+3) { --b: #00e5ff; animation-delay: -1.2s; }
+.xmas-lights i:nth-child(5n+4) { --b: #76ff03; animation-delay: -.3s; }
+.xmas-lights i:nth-child(5n+5) { --b: #ff4fd8; animation-delay: -.9s; }
+@keyframes xmasBulb { 66% { opacity: .3; box-shadow: none; } }
+@media (max-height: 540px) and (orientation: landscape) {
+  .menu-panel .xmas-greet { font-size: 9px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
@@ -412,8 +444,9 @@ body.no-crt #crt { display: none; }
 <section id="scr-menu" class="screen active">
   <div class="panel cabinet menu-panel">
     <header class="title-wrap">
-      <h1 class="game-title">SMOKING<br>SIMULATOR</h1>
+      <h1 class="game-title"><span class="t-line"><svg class="xmas-hat" viewBox="0 0 18 14" aria-hidden="true" shape-rendering="crispEdges" hidden><path fill="#e11d48" d="M1 8h14v3H1zM2 6h12v2H2zM4 4h10v2H4zM7 3h8v1H7zM10 2h5v1h-5z"/><path fill="#9f1239" d="M1 8h3v3H1zM2 6h2v2H2zM4 4h2v2H4z"/><path fill="#fb7185" d="M10 5h2v1h-2zM11 7h2v1h-2z"/><path fill="#f8fafc" d="M0 11h16v3H0zM14 0h4v3h-4z"/><path fill="#cbd5e1" d="M0 13h16v1H0zM17 1h1v2h-1z"/></svg>SMOKING</span><br>SIMULATOR</h1>
       <canvas id="title-cig" width="80" height="24" aria-hidden="true"></canvas>
+      <p class="xmas-greet" data-i18n="xmas" hidden>¡FELIZ NAVIDAD!</p>
     </header>
 
     <div class="lang-bar" role="group" aria-label="Idioma / Language">
@@ -567,6 +600,19 @@ const grow = (r, m) => ({ x: r.x - m, y: r.y - m, w: r.w + m * 2, h: r.h + m * 2
 const REDUCED = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
 let NOW = performance.now() / 1000;
 
+/* ---------- Navidad ----------
+   La decoración navideña se activa sola del 20 de noviembre al 7 de enero.
+   Para forzarla: añade ?xmas=1 a la dirección (o ?xmas=0 para quitarla). */
+const XMAS = (() => {
+  try {
+    const q = new URLSearchParams(location.search).get('xmas');
+    if (q === '1' || q === '0') return q === '1';
+  } catch (e) { /* sin parámetros */ }
+  const d = new Date(), m = d.getMonth(), day = d.getDate();
+  return (m === 10 && day >= 20) || m === 11 || (m === 0 && day <= 7);
+})();
+const XMAS_COLS = ['#ff1744', '#ffea00', '#00e5ff', '#76ff03', '#ff4fd8'];
+
 /* ---------- Guardado (si el navegador no deja, el juego sigue sin guardar) ---------- */
 const Store = {
   KEY: 'smokingSimulator.save.v2',
@@ -593,7 +639,7 @@ Store.load();
    En las instrucciones: *texto* = resaltado amarillo, _texto_ = verde */
 const DICT = {
   es: {
-    chooseChar: 'ELIGE PERSONAJE', chooseDiff: 'DIFICULTAD',
+    chooseChar: 'ELIGE PERSONAJE', chooseDiff: 'DIFICULTAD', xmas: '¡FELIZ NAVIDAD!',
     easy: 'FÁCIL', mod: 'MODERADO', ext: 'ADICTO EXTREMO',
     continue: 'CONTINUAR', instTitle: 'INSTRUCCIONES', accept: 'ACEPTAR', back: 'VOLVER',
     tryAgain: 'INTENTARLO DE NUEVO', menu: 'MENÚ', resume: 'SEGUIR', restart: 'REINICIAR', paused: 'PAUSA',
@@ -644,7 +690,7 @@ const DICT = {
     ]
   },
   en: {
-    chooseChar: 'CHOOSE CHARACTER', chooseDiff: 'DIFFICULTY',
+    chooseChar: 'CHOOSE CHARACTER', chooseDiff: 'DIFFICULTY', xmas: 'MERRY CHRISTMAS!',
     easy: 'EASY', mod: 'MODERATE', ext: 'EXTREME ADDICT',
     continue: 'CONTINUE', instTitle: 'INSTRUCTIONS', accept: 'ACCEPT', back: 'BACK',
     tryAgain: 'TRY AGAIN', menu: 'MENU', resume: 'RESUME', restart: 'RESTART', paused: 'PAUSED',
@@ -1193,6 +1239,8 @@ function lookColors(L) {
     style: L.style || 'short', eye: '#1a0f1f', mouth: '#7a2a2a'
   });
   if (C.shirt === '#f8fafc') C.shirtS = '#cbd5e1';
+  // en Navidad los protagonistas llevan gorro de Papá Noel (el chef se queda con el suyo)
+  C.santa = XMAS && !!CHARS[L.id] && C.style !== 'chef';
   LOOK_CACHE.set(L.id, C);
   return C;
 }
@@ -1294,6 +1342,24 @@ function headband(g, C, hx, hy, view) {
   if (view === 'up') { R(g, hx + 3, hy + 3, 1, 3, bs); R(g, hx + 6, hy + 3, 1, 2, bs); }
 }
 
+/* gorro de Papá Noel (Navidad) */
+function santaHat(g, C, hx, hy, view) {
+  if (!C.santa) return;
+  const y = hy - (C.style === 'big' || C.style === 'afro' ? 2 : 0);
+  const r = '#e11d48', rs = '#9f1239', w = '#f8fafc', ws = '#cbd5e1';
+  if (view === 'side') {
+    R(g, hx + 1, y - 3, 9, 2, r); R(g, hx + 1, y - 5, 7, 2, r); R(g, hx, y - 6, 5, 1, r); R(g, hx - 2, y - 6, 3, 1, rs);
+    R(g, hx + 1, y - 3, 2, 2, rs); P(g, hx + 4, y - 5, '#fb7185');
+    R(g, hx - 4, y - 6, 2, 2, w); P(g, hx - 4, y - 5, ws);
+    R(g, hx, y - 1, 10, 2, w); R(g, hx, y, 10, 1, ws);
+    return;
+  }
+  R(g, hx, y - 3, 10, 2, r); R(g, hx + 1, y - 5, 8, 2, r); R(g, hx + 3, y - 6, 6, 1, r); R(g, hx + 6, y - 7, 4, 1, r);
+  R(g, hx, y - 3, 2, 2, rs); P(g, hx + 1, y - 5, rs); P(g, hx + 6, y - 5, '#fb7185'); P(g, hx + 7, y - 4, '#fb7185');
+  R(g, hx + 10, y - 8, 2, 2, w); P(g, hx + 11, y - 7, ws);
+  R(g, hx - 1, y - 1, 12, 2, w); R(g, hx - 1, y, 12, 1, ws);
+}
+
 function hairFront(g, C, hx, hy) {
   const h = C.hair, hl = C.hairL, hs = C.hairS;
   switch (C.style) {
@@ -1331,6 +1397,7 @@ function hairFront(g, C, hx, hy) {
   }
   headband(g, C, hx, hy, 'front');
   if (C.phones) phones(g, hx, hy, false);
+  santaHat(g, C, hx, hy, 'front');
 }
 function hairBack(g, C, hx, hy) {
   const h = C.hair, hs = C.hairS, hl = C.hairL;
@@ -1347,6 +1414,7 @@ function hairBack(g, C, hx, hy) {
   }
   headband(g, C, hx, hy, 'up');
   if (C.phones) phones(g, hx, hy, false);
+  santaHat(g, C, hx, hy, 'up');
 }
 function hairSide(g, C, hx, hy) {
   const h = C.hair, hl = C.hairL;
@@ -1364,6 +1432,7 @@ function hairSide(g, C, hx, hy) {
   }
   headband(g, C, hx, hy, 'side');
   if (C.phones) phones(g, hx, hy, true);
+  santaHat(g, C, hx, hy, 'side');
 }
 function phones(g, hx, hy, side) {
   if (side) { R(g, hx + 3, hy - 2, 1, 6, '#3a3a44'); R(g, hx + 2, hy + 3, 3, 4, '#222'); P(g, hx + 3, hy + 4, '#ff2fd0'); return; }
@@ -1872,6 +1941,112 @@ const DECOR = {
   sign: () => sprite('roadsign', 18, 30, g => { R(g, 8, 12, 2, 17, '#94a3b8'); R(g, 1, 1, 16, 12, '#1d4ed8'); R(g, 2, 2, 14, 10, '#2563eb'); R(g, 4, 5, 10, 1, '#ffffff'); R(g, 4, 8, 7, 1, '#ffffff'); })
 };
 
+/* ---------- Navidad: nieve encima de las cosas, árbol, guirnaldas y copos ---------- */
+// pinta de blanco la parte de arriba de un sprite (como si le hubiera nevado encima)
+function snowCap(cv, depth) {
+  const g = cv.getContext('2d'), w = cv.width, h = cv.height;
+  const id = g.getImageData(0, 0, w, h), d = id.data;
+  for (let x = 0; x < w; x++) for (let y = 0; y < h; y++) {
+    const i = (y * w + x) * 4;
+    if (d[i + 3] < 200) continue;
+    for (let k = 0; k < depth && y + k < h; k++) {
+      const j = ((y + k) * w + x) * 4;
+      if (d[j + 3] < 200) break;
+      const c = k === 0 ? [248, 250, 252] : (x * 7 + y) % 3 ? [226, 232, 240] : [203, 213, 225];
+      d[j] = c[0]; d[j + 1] = c[1]; d[j + 2] = c[2];
+    }
+    break;
+  }
+  g.putImageData(id, 0, 0);
+  return cv;
+}
+if (XMAS) {
+  const depth = { tree: 2, bush: 2 };
+  ['tree', 'bush', 'benchH', 'benchV', 'trash', 'hydrant', 'lamp', 'streetlight', 'kmPost', 'sign'].forEach(k => {
+    const f = DECOR[k]; let done = null;
+    DECOR[k] = () => done || (done = snowCap(f(), depth[k] || 1));
+  });
+}
+// árbol de Navidad con regalos (las luces se pintan aparte para que parpadeen)
+const XTREE = { w: 34, h: 44, star: [17, 3], lights: [[15, 10], [19, 13], [13, 17], [21, 19], [11, 23], [17, 22], [23, 26], [9, 29], [15, 28], [20, 31], [26, 33], [12, 34]] };
+DECOR.xmasTree = () => sprite('xmasTree', XTREE.w, XTREE.h, g => {
+  oval(g, 17, 41, 15, 2, 'rgba(0,0,0,0.35)');
+  R(g, 15, 34, 5, 5, '#78350f'); R(g, 15, 34, 2, 5, '#92400e');
+  const tier = (top, h, w0, w1) => {
+    for (let y = 0; y < h; y++) {
+      const hw = Math.round(w0 + (w1 - w0) * y / (h - 1));
+      R(g, 17 - hw, top + y, hw * 2 + 1, 1, '#15803d');
+      R(g, 17 - hw, top + y, Math.max(1, Math.floor(hw * 0.6)), 1, '#16a34a');
+      R(g, 17 + Math.ceil(hw * 0.4), top + y, Math.max(1, Math.ceil(hw * 0.6)), 1, '#166534');
+    }
+    for (let x = 17 - w1; x <= 17 + w1; x += 2) P(g, x, top + h - 1, '#14532d');
+  };
+  tier(6, 10, 1, 6); tier(13, 11, 3, 10); tier(21, 14, 5, 14);
+  // espumillón dorado en diagonal
+  [[12, 12, 8], [9, 20, 12], [6, 29, 16]].forEach(([x, y, n]) => { for (let k = 0; k < n; k++) P(g, x + k, y + Math.floor(k / 3), k % 2 ? '#fbbf24' : '#fde68a'); });
+  // bolas fijas
+  [[18, 9, '#dc2626'], [14, 15, '#2563eb'], [20, 18, '#dc2626'], [10, 26, '#fbbf24'], [24, 24, '#2563eb'], [16, 32, '#dc2626'], [27, 30, '#fbbf24'], [7, 32, '#dc2626']].forEach(([x, y, c]) => { P(g, x, y, c); P(g, x + 1, y, c); P(g, x, y + 1, c); P(g, x + 1, y + 1, mix(c, '#000000', 0.35)); P(g, x, y, mix(c, '#ffffff', 0.5)); });
+  // estrella
+  R(g, 16, 1, 3, 5, '#facc15'); R(g, 14, 3, 7, 1, '#facc15'); P(g, 17, 0, '#facc15'); P(g, 17, 2, '#fff7c2'); P(g, 15, 5, '#facc15'); P(g, 19, 5, '#facc15');
+  // regalos
+  const gift = (x, y, w, h, c, rib) => { R(g, x, y, w, h, c); R(g, x, y, w, 1, mix(c, '#ffffff', 0.3)); R(g, x + (w >> 1), y, 1, h, rib); R(g, x, y + 2, w, 1, rib); P(g, x + (w >> 1) - 1, y - 1, rib); P(g, x + (w >> 1) + 1, y - 1, rib); };
+  gift(1, 34, 10, 8, '#dc2626', '#fde047');
+  gift(23, 32, 10, 10, '#2563eb', '#f8fafc');
+  gift(11, 37, 7, 5, '#16a34a', '#ef4444');
+  gift(18, 38, 5, 4, '#a855f7', '#fde047');
+});
+function xmasTreeLights(g, x, y, t) {
+  const b = Math.floor(t * 2.5);
+  XTREE.lights.forEach(([lx, ly], k) => { if ((b + k) % 3 !== 0) P(g, x + lx, y + ly, XMAS_COLS[(k + (b >> 1)) % XMAS_COLS.length]); });
+  const tw = 0.5 + 0.5 * Math.sin(t * 4);
+  if (tw > 0.6) { P(g, x + 17, y + 1, '#ffffff'); P(g, x + 13, y + 3, '#fff7c2'); P(g, x + 21, y + 3, '#fff7c2'); }
+}
+// guirnalda con bombillas colgando de una pared (de x0 a x1, a la altura y)
+function xmasGarland(g, x0, x1, y, t) {
+  const n = Math.max(1, Math.round((x1 - x0) / 34)), sw = (x1 - x0) / n, b = Math.floor(t * 2);
+  const bulbs = [];
+  for (let s = 0; s < n; s++) {
+    for (let k = 0; k <= Math.ceil(sw); k++) {
+      const x = Math.round(x0 + s * sw + k), yy = y + Math.round(Math.sin(k / sw * Math.PI) * 4);
+      if (x >= x1) break;
+      P(g, x, yy, '#166534'); P(g, x, yy + 1, '#14532d');
+      if ((x * 7) % 5 === 0) P(g, x, yy - 1, '#22c55e'); else if ((x * 3) % 7 === 0) P(g, x, yy + 2, '#15803d');
+    }
+    [0.25, 0.5, 0.75].forEach((f, j) => {
+      const k = f * sw, x = Math.round(x0 + s * sw + k), yy = y + Math.round(Math.sin(f * Math.PI) * 4) + 2;
+      const col = XMAS_COLS[(s * 3 + j) % XMAS_COLS.length], on = (b + s + j) % 3 !== 0;
+      P(g, x, yy, '#334155'); R(g, x, yy + 1, 1, 2, on ? col : mix(col, '#000000', 0.55));
+      if (on) bulbs.push([x, yy + 2, col]);
+    });
+  }
+  g.globalCompositeOperation = 'lighter';
+  for (const [x, yy, col] of bulbs) glow(g, x + 0.5, yy, 4, col, 0.35);
+  g.globalCompositeOperation = 'source-over';
+}
+// copos cayendo (sin estado: la posición sale del tiempo); off = desplazamiento extra hacia abajo
+function snowfall(g, x, y, w, h, t, n, off, speed, seed) {
+  if (REDUCED) t = 0;
+  const r = seeded(seed || 99), k = speed || 1;
+  for (let i = 0; i < n; i++) {
+    const sp = (9 + r() * 14) * k, ph = r() * 10, bx = r() * w, by = r() * h, big = r() > 0.82;
+    const fy = (((by + t * sp + (off || 0)) % h) + h) % h;
+    const fx = (((bx + Math.sin(t * 0.9 + ph) * 4 * k + t * 3 * k) % w) + w) % w;
+    g.fillStyle = big ? '#ffffff' : 'rgba(226,232,240,0.75)';
+    g.fillRect(Math.round(x + fx), Math.round(y + fy), big ? 2 : 1, big ? 2 : 1);
+  }
+}
+// montoncitos de nieve en el suelo
+function snowGround(g, x, y, w, h, seed, amount, clipX) {
+  const r = seeded(seed);
+  g.save(); g.beginPath(); if (clipX) g.rect(x, -1e4, w, 2e4); else g.rect(x, y, w, h); g.clip();
+  for (let i = 0; i < w * h / (amount || 55); i++) {
+    const px = x + Math.floor(r() * w), py = y + Math.floor(r() * h), rw = 2 + Math.floor(r() * 5);
+    R(g, px - rw, py, rw * 2, 1, '#dbe4ef'); R(g, px - rw + 1, py - 1, rw * 2 - 2, 1, '#f8fafc'); R(g, px - rw + 1, py + 1, rw * 2 - 2, 1, '#94a3b8');
+  }
+  for (let i = 0; i < w * h / 45; i++) P(g, x + Math.floor(r() * w), y + Math.floor(r() * h), r() > 0.5 ? '#e2e8f0' : '#cbd5e1');
+  g.restore();
+}
+
 /* ---------- Coches (vistos desde arriba, de frente hacia abajo) ---------- */
 const CAR_TYPES = [
   { type: 'sedan', w: 38, h: 62 }, { type: 'compact', w: 37, h: 54 }, { type: 'taxi', w: 38, h: 62 },
@@ -2117,6 +2292,7 @@ function buildLevel(charId, orient) {
   }
   for (const st of L.stations) { if (st.kind !== 'person') { g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(st.x + 3, st.y + st.h - 1, st.w, 3); } }
   outdoor(g, C.zone, L.zone, orient);
+  if (XMAS) snowGround(g, L.zone.x, L.zone.y, L.zone.w, L.zone.h, 13, C.zone === 'street' ? 110 : 65);
   // pared exterior y puerta
   for (const w of L.walls) {
     R(g, w.x, w.y, w.w, w.h, '#334155');
@@ -2139,6 +2315,12 @@ function buildLevel(charId, orient) {
 
   /* --- decoración ordenada por profundidad --- */
   const add = (spr, x, y, extra) => L.props.push(Object.assign({ spr, x: Math.round(x), y: Math.round(y) }, extra || {}));
+  if (XMAS) {
+    // árbol de Navidad en una esquina libre del local (no se puede atravesar)
+    const tx = land ? 20 : 280, ty = land ? 294 : 270;
+    add(DECOR.xmasTree(), tx, ty, { xmasTree: true });
+    L.walls.push({ x: tx - 14, y: ty - 14, w: 28, h: 14, deco: true });
+  }
   const z = L.zone;
   if (C.zone === 'park') {
     if (land) {
@@ -2204,6 +2386,14 @@ function buildRoad(orient) {
   R(g, L.shoulderL, 0, 48, 64, '#334155'); speckle(g, L.shoulderL, 0, 48, 64, ['#3b4a60', '#2a3647'], 400, 12);
   for (let y = -48; y < 64; y += 16) for (let k = 0; k < 10; k++) P(g, L.shoulderL + 6 + k * 4, y + k * 4, '#3f5068');
   R(g, L.shoulderR, 0, 4, 64, '#64748b'); R(g, L.shoulderR + 1, 0, 1, 64, '#94a3b8');
+  if (XMAS) {
+    // hierba nevada a los lados (se dibuja también desplazada 64 px para que el patrón encaje)
+    const grass = [[0, roadL - 6], [L.shoulderR + 4, W]];
+    for (const [a, b] of grass) for (const dy of [-64, 0, 64]) snowGround(g, a, dy, b - a, 64, 21, 70, true);
+    const r = seeded(17);
+    for (let i = 0; i < 70; i++) P(g, L.shoulderL + Math.floor(r() * 48), Math.floor(r() * 64), r() > 0.5 ? '#94a3b8' : '#cbd5e1');
+    R(g, roadL - 6, 0, 1, 64, '#f8fafc'); R(g, L.shoulderR, 0, 1, 64, '#f8fafc');
+  }
   L.tex = tex;
   const pattern = mkCanvas(W, 64), pg = pattern.getContext('2d');
   pg.drawImage(tex, 0, 0);
@@ -2824,6 +3014,7 @@ const Render = {
     const x = pr.x - Math.floor(s.width / 2), y = pr.y - s.height;
     g.drawImage(s, x, y);
     if (pr.leds) for (let k = 0; k < 5; k++) { if (((Math.floor(t * 3) + k * 3 + pr.x) % 4) !== 0) P(g, x + 13, y + 4 + k * 5, k % 2 ? '#22c55e' : '#00f0ff'); P(g, x + 4, y + 4 + k * 5, '#64748b'); }
+    if (pr.xmasTree) xmasTreeLights(g, x, y, t);
     if (pr.speaker) { const pulse = Math.max(0, 1 - (Sound.beat() % 1) * 3); if (pulse > 0.3) ring(g, x + 9, y + 20, 6, 7, '#ff00ff'); }
   },
 
@@ -2952,6 +3143,11 @@ const Render = {
     if (on) { g.globalCompositeOperation = 'lighter'; land ? glow(g, 322, 104, 14, '#ff0055', 0.18) : glow(g, 150, 267, 14, '#ff0055', 0.18); g.globalCompositeOperation = 'source-over'; }
     // noche en el exterior
     const z = L.zone; g.fillStyle = 'rgba(10,8,40,0.22)'; g.fillRect(z.x, z.y, z.w, z.h);
+    if (XMAS) {
+      snowfall(g, z.x, z.y, z.w, z.h, t, Math.round(z.w * z.h / 260), 0, 1, 5);
+      xmasGarland(g, L.indoor.x, L.indoor.x + L.indoor.w, 1, t);
+      { g.globalCompositeOperation = 'lighter'; for (const pr of L.props) if (pr.xmasTree) glow(g, pr.x, pr.y - XTREE.h + 3, 7, '#fde68a', 0.3); g.globalCompositeOperation = 'source-over'; }
+    }
   },
 
   clubLights(g, t) {
@@ -3052,6 +3248,7 @@ const Render = {
     else g.drawImage(spr, Math.round(K.x) - 10, my - 31);
     // noche y luces
     g.fillStyle = 'rgba(8,2,26,0.36)'; g.fillRect(0, 0, L.W, H);
+    if (XMAS) snowfall(g, 0, 0, L.W, H, t, 110, K.scroll * 0.9, 1.4, 8);
     g.globalCompositeOperation = 'lighter';
     for (const s of K.scen) if (s.kind === 'lamp') { glow(g, s.x - 16, s.y - 30, 30, '#fde68a', 0.2); glow(g, s.x - 7, s.y - 36, 4, '#fff7c2', 0.7); }
     for (const c of cars) {
@@ -3230,6 +3427,15 @@ const UI = {
   touch: false, screen: 'menu', cd: null, hc: {}, bgT: 0, portT: 0, cigT: 0, cigParts: [],
 
   init() {
+    if (XMAS) {
+      document.body.classList.add('xmas');
+      document.querySelectorAll('.xmas-hat, .xmas-greet').forEach(el => el.removeAttribute('hidden'));
+      document.querySelectorAll('.cabinet').forEach(p => {
+        const l = document.createElement('div'); l.className = 'xmas-lights'; l.setAttribute('aria-hidden', 'true');
+        for (let i = 0; i < 16; i++) l.appendChild(document.createElement('i'));
+        p.prepend(l);
+      });
+    }
     this.touch = (window.matchMedia && matchMedia('(pointer: coarse)').matches) || ('ontouchstart' in window && Math.min(innerWidth, innerHeight) < 900);
     // tarjetas de personaje
     const grid = $('char-grid');
@@ -3552,6 +3758,13 @@ const UI = {
     }
     g.strokeStyle = 'rgba(216,0,255,0.45)'; g.lineWidth = 1;
     for (let j = -12; j <= 12; j++) { g.beginPath(); g.moveTo(cx + j * 3, hz); g.lineTo(cx + j * w / 7, h); g.stroke(); }
+    if (XMAS) {
+      // montañas nevadas y copos
+      const rr = seeded(5); g.fillStyle = 'rgba(241,245,249,0.55)';
+      let y = hz - h * 0.08;
+      for (let x = 0; x <= w; x += 6) { y = clamp(y + (rr() - 0.5) * 9, hz - h * 0.08 - 9, hz - 2); if (y < hz - h * 0.08 + 2) g.fillRect(x, Math.round(y), 6, 1); }
+      snowfall(g, 0, 0, w, h, t, Math.round(w * h / 140), 0, h / 120, 3);
+    }
   },
   drawCig(t, dt) {
     const g = $('title-cig').getContext('2d');
